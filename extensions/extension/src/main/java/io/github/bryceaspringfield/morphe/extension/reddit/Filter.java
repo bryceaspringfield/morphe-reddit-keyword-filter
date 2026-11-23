@@ -23,14 +23,14 @@ final class Filter {
     }
 
     static Rules postRules() {
-        String source = getString(POST_RULES, "");
+        String source = getString(POST_RULES, "") + Mainline.keywordRules() + Mainline.flairRules();
         Rules current = postRules;
         if (!current.source.equals(source)) postRules = current = new Rules(source);
         return current;
     }
 
     static Rules commentRules() {
-        String source = getString(COMMENT_RULES, "");
+        String source = getString(COMMENT_RULES, "") + Mainline.keywordRules();
         Rules current = commentRules;
         if (!current.source.equals(source)) commentRules = current = new Rules(source);
         return current;

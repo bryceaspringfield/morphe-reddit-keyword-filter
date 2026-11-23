@@ -18,7 +18,7 @@ pluginManagement {
 }
 
 plugins {
-    id("app.morphe.patches") version "2.1.0"
+    id("app.morphe.patches") version "2.1.1"
 }
 
 // Builds against a local morphe-patcher checkout beside this folder when one exists,

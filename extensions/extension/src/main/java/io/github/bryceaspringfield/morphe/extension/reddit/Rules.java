@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  */
 final class Rules {
 
-    enum Kind {COMMUNITY, AUTHOR, FLAIR, NOT_FLAIR, PHRASE, TEXT}
+    enum Kind {COMMUNITY, AUTHOR, FLAIR, NOT_FLAIR, PHRASE, TEXT, REGEX}
 
     static final class Rule {
         final Kind kind;
@@ -37,7 +37,7 @@ final class Rules {
             this.scope = scope;
             this.pattern = kind == Kind.PHRASE
                     ? Pattern.compile("(?<![\\p{L}\\p{N}_])" + Pattern.quote(value) + "(?![\\p{L}\\p{N}_])")
-                    : null;
+                    : kind == Kind.REGEX ? Pattern.compile(value, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE) : null;
         }
 
         /**
@@ -56,7 +56,7 @@ final class Rules {
 
         boolean matchesText(String text) {
             if (text == null || text.isEmpty()) return false;
-            return kind == Kind.PHRASE ? pattern.matcher(text).find() : text.contains(value);
+            return kind == Kind.PHRASE || kind == Kind.REGEX ? pattern.matcher(text).find() : text.contains(value);
         }
     }
 
@@ -85,6 +85,14 @@ final class Rules {
             if (lower.isEmpty()) return new Rule(Kind.COMMUNITY, "", scope);
         }
 
+        // A regular expression (the mainline Keyword filters' rules arrive this way), case-insensitive; an invalid one is skipped.
+        if (lower.startsWith("re:") && lower.length() > 3) {
+            try {
+                return new Rule(Kind.REGEX, line.substring(3).trim(), scope);
+            } catch (java.util.regex.PatternSyntaxException e) {
+                return null;
+            }
+        }
         if (lower.startsWith("!flair:") && lower.length() > 7) {
             return new Rule(Kind.NOT_FLAIR, flairKey(unquote(lower.substring(7))), scope);
         }
